@@ -17,10 +17,13 @@ class MateriResource extends JsonResource
             'file_url'          => $this->file_url,
             'youtube_url'       => $this->youtube_url,
             'youtube_embed_url' => $this->youtube_embed_url,
-            'created_by'        => [
+
+            // FIX: null check — kalau creator dihapus dari DB, tidak crash
+            'created_by'        => $this->creator ? [
                 'id'   => $this->creator->id,
                 'name' => $this->creator->name,
-            ],
+            ] : null,
+
             'created_at'        => $this->created_at->format('d M Y'),
             'updated_at'        => $this->updated_at->format('d M Y'),
         ];

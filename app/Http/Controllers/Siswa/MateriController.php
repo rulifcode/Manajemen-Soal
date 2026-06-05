@@ -11,11 +11,27 @@ use Illuminate\Support\Facades\Cache;
 class MateriController extends Controller
 {
     /**
+     * Daftarkan cache key list siswa ke registry
+     */
+    private function rememberListKey(string $key): void
+    {
+        $keys = Cache::get('materi_list_keys', []);
+        if (!in_array($key, $keys)) {
+            $keys[] = $key;
+            Cache::put('materi_list_keys', $keys, 3600);
+        }
+    }
+
+    /**
      * GET api/list-materi (Siswa)
      */
     public function index(Request $request)
     {
         $cacheKey = 'materi_list_siswa_' . md5(json_encode($request->all()));
+
+        // Daftarkan key ini ke registry yang sama dengan admin
+        // sehingga saat admin invalidate, cache siswa ikut terhapus
+        $this->rememberListKey($cacheKey);
 
         $materi = Cache::remember($cacheKey, 60, function () use ($request) {
             return FileMateri::with('creator')

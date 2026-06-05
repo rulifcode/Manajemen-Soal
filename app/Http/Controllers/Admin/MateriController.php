@@ -13,15 +13,41 @@ use Illuminate\Support\Str;
 class MateriController extends Controller
 {
     /**
+     * Simpan cache key list ke registry, supaya bisa di-invalidate tanpa Cache::flush()
+     */
+    private function rememberListKey(string $key): void
+    {
+        $keys = Cache::get('materi_list_keys', []);
+        if (!in_array($key, $keys)) {
+            $keys[] = $key;
+            Cache::put('materi_list_keys', $keys, 3600);
+        }
+    }
+
+    /**
+     * Hapus semua cache list materi (tanpa menyentuh cache lain)
+     */
+    private function forgetAllListCache(): void
+    {
+        $keys = Cache::get('materi_list_keys', []);
+        foreach ($keys as $key) {
+            Cache::forget($key);
+        }
+        Cache::forget('materi_list_keys');
+    }
+
+    /**
      * GET api/list-materi (Admin)
-     * Dengan pagination, filter, dan caching
      */
     public function index(Request $request)
     {
         $cacheKey = 'materi_list_admin_' . md5(json_encode($request->all()));
 
+        // Daftarkan key ini ke registry
+        $this->rememberListKey($cacheKey);
+
         $materi = Cache::remember($cacheKey, 60, function () use ($request) {
-            $query = FileMateri::with('creator')
+            return FileMateri::with('creator')
                 ->when($request->search, fn($q) =>
                     $q->where('title', 'like', "%{$request->search}%")
                       ->orWhere('description', 'like', "%{$request->search}%")
@@ -29,9 +55,8 @@ class MateriController extends Controller
                 ->when($request->type, fn($q) =>
                     $q->where('type', $request->type)
                 )
-                ->latest();
-
-            return $query->paginate($request->per_page ?? 10);
+                ->latest()
+                ->paginate($request->per_page ?? 10);
         });
 
         return MateriResource::collection($materi)
@@ -79,17 +104,16 @@ class MateriController extends Controller
         if ($request->type === 'youtube') {
             $data['youtube_url'] = $request->youtube_url;
         } else {
-            $file      = $request->file('file');
-            $folder    = $request->type === 'pdf' ? 'materi/pdf' : 'materi/images';
-            $filename  = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $path      = $file->storeAs($folder, $filename, 'public');
-            $data['file_path'] = $path;
+            $file     = $request->file('file');
+            $folder   = $request->type === 'pdf' ? 'materi/pdf' : 'materi/images';
+            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $data['file_path'] = $file->storeAs($folder, $filename, 'public');
         }
 
         $materi = FileMateri::create($data);
 
-        // Clear cache list
-        Cache::flush();
+        // FIX: hanya invalidate cache list materi, bukan semua cache
+        $this->forgetAllListCache();
 
         return (new MateriResource($materi->load('creator')))
             ->additional(['message' => 'Materi berhasil diupload'])
@@ -98,7 +122,7 @@ class MateriController extends Controller
     }
 
     /**
-     * PUT api/update-materi/{id} (Admin) — bonus endpoint
+     * PUT api/update-materi/{id} (Admin)
      */
     public function update(Request $request, $id)
     {
@@ -113,11 +137,9 @@ class MateriController extends Controller
         ]);
 
         if ($request->hasFile('file')) {
-            // Hapus file lama
             if ($materi->file_path) {
                 Storage::disk('public')->delete($materi->file_path);
             }
-
             $file     = $request->file('file');
             $folder   = ($request->type ?? $materi->type) === 'pdf' ? 'materi/pdf' : 'materi/images';
             $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
@@ -127,29 +149,32 @@ class MateriController extends Controller
         $materi->fill($request->only(['title', 'description', 'type', 'youtube_url']));
         $materi->save();
 
+        // FIX: forget cache admin + cache siswa + semua cache list
         Cache::forget("materi_{$id}");
-        Cache::flush();
+        Cache::forget("materi_siswa_{$id}");
+        $this->forgetAllListCache();
 
         return (new MateriResource($materi->load('creator')))
             ->additional(['message' => 'Materi berhasil diperbarui']);
     }
 
     /**
-     * DELETE api/delete-materi/{id} (Admin) — bonus endpoint
+     * DELETE api/delete-materi/{id} (Admin)
      */
     public function destroy($id)
     {
         $materi = FileMateri::findOrFail($id);
 
-        // Hapus file fisik kalau ada
         if ($materi->file_path) {
             Storage::disk('public')->delete($materi->file_path);
         }
 
         $materi->delete(); // SoftDelete
 
+        // FIX: forget cache admin + cache siswa + semua cache list
         Cache::forget("materi_{$id}");
-        Cache::flush();
+        Cache::forget("materi_siswa_{$id}");
+        $this->forgetAllListCache();
 
         return response()->json(['message' => 'Materi berhasil dihapus']);
     }
@@ -163,7 +188,7 @@ class MateriController extends Controller
 
         if ($materi->type === 'youtube') {
             return response()->json([
-                'message' => 'Tipe YouTube tidak bisa didownload, gunakan salin link.',
+                'message'     => 'Tipe YouTube tidak bisa didownload, gunakan salin link.',
                 'youtube_url' => $materi->youtube_url,
             ], 422);
         }

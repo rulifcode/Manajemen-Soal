@@ -37,9 +37,10 @@ Platform bimbingan belajar berbasis web untuk manajemen soal dengan 2 role: **Ad
 - Pagination pada list materi
 - Search & filter materi berdasarkan judul dan tipe
 - Caching pada endpoint list & detail materi
-- Cache otomatis di-clear saat data diubah
+- Cache otomatis di-clear saat data diubah (selective, tidak flush semua)
 - Relasi tabel `file_materi` → `users` via `created_by`
 - Middleware role-based access control (RBAC)
+- SoftDeletes pada tabel `file_materi`
 
 ---
 
@@ -68,10 +69,11 @@ Platform bimbingan belajar berbasis web untuk manajemen soal dengan 2 role: **Ad
 | file_path   | varchar      | Path file di storage, nullable      |
 | youtube_url | varchar      | URL YouTube, nullable               |
 | created_by  | bigint (FK)  | Foreign key → `users.id`            |
+| deleted_at  | timestamp    | SoftDeletes, nullable               |
 | created_at  | timestamp    |                                     |
 | updated_at  | timestamp    |                                     |
 
-**Relasi:** `file_materi.created_by` → `users.id` (Many-to-One)
+**Relasi:** `file_materi.created_by` → `users.id` (Many-to-One, CASCADE on delete)
 
 ---
 
@@ -95,10 +97,10 @@ Platform bimbingan belajar berbasis web untuk manajemen soal dengan 2 role: **Ad
 | GET    | /api/materi-download/{id}   | Download file          | Admin |
 
 ### Siswa
-| Method | Endpoint                | Deskripsi        | Auth  |
-|--------|-------------------------|------------------|-------|
+| Method | Endpoint                | Deskripsi         | Auth  |
+|--------|-------------------------|-------------------|-------|
 | GET    | /api/list-materi        | List semua materi | Siswa |
-| GET    | /api/detail-materi/{id} | Detail materi    | Siswa |
+| GET    | /api/detail-materi/{id} | Detail materi     | Siswa |
 
 ---
 
@@ -222,40 +224,57 @@ soal-management/
 │   │   │   ├── Admin/MateriController.php
 │   │   │   ├── Auth/AuthController.php
 │   │   │   └── Siswa/MateriController.php
-│   │   └── Middleware/
-│   │       └── RoleMiddleware.php
+│   │   ├── Middleware/
+│   │   │   └── RoleMiddleware.php
+│   │   └── Resources/
+│   │       └── MateriResource.php
 │   └── Models/
-│       ├── FileMaterial.php
+│       ├── FileMateri.php
 │       └── User.php
 ├── database/
 │   ├── migrations/
 │   └── seeders/
 │       └── UserSeeder.php
 ├── resources/js/
-│   └── Pages/          ← Halaman React/Inertia
+│   └── Pages/
+│       ├── Auth/
+│       ├── Admin/
+│       │   └── Materi/         ← halaman admin (WIP)
+│       └── Siswa/
+│           └── Materi/         ← halaman siswa (WIP)
 ├── routes/
 │   └── api.php
-└── storage/app/public/ ← File upload tersimpan di sini
+└── storage/app/public/         ← file upload tersimpan di sini
 ```
 
 ---
 
 ## 🔐 Implementasi Caching
 
-Caching diterapkan pada endpoint list dan detail materi untuk mengurangi query database:
+Caching diterapkan pada endpoint list dan detail materi menggunakan `Cache::remember()`.
+Saat data berubah (upload/edit/delete), cache di-invalidate secara selektif menggunakan
+key registry — tanpa `Cache::flush()` yang bisa menghapus cache lain.
 
 ```php
-// Cache selama 5 menit, auto-clear saat data berubah
-Cache::remember("materi_list_{$role}_{$page}", 300, fn() => ...);
-Cache::forget("materi_list_admin_*"); // saat upload/edit/delete
+// Menyimpan cache
+Cache::remember($cacheKey, 60, fn() => FileMateri::paginate(10));
+
+// Invalidate selektif saat data berubah
+Cache::forget("materi_{$id}");
+Cache::forget("materi_siswa_{$id}");
+$this->forgetAllListCache(); // loop registry key, forget satu per satu
 ```
 
 ---
 
-## 📝 Catatan Teknis
+## 🔧 Fix & Improvement yang Diterapkan
 
-- File upload disimpan di `storage/app/public/materi/`
-- Akses file via URL: `/storage/materi/namafile.pdf`
-- YouTube embed menggunakan `youtube.com/embed/{videoId}` yang di-parse otomatis dari URL
-- Middleware `role` terdaftar di `bootstrap/app.php` via `$middleware->alias()`
-- Token Sanctum disimpan di tabel `personal_access_tokens`
+| # | Issue | Status |
+|---|-------|--------|
+| 1 | Migration `add_role_to_users_table` kosong — kolom `role` sudah ada di migration utama | ✅ Verified aman |
+| 2 | `Cache::flush()` diganti selective `Cache::forget()` via key registry | ✅ Fixed |
+| 3 | `MateriResource` crash jika `creator` null | ✅ Fixed |
+| 4 | Cache siswa tidak di-invalidate saat admin update/delete | ✅ Fixed |
+| 5 | Route `/list-materi` closure diganti ke masing-masing role group | ✅ Fixed |
+| 6 | Halaman React Admin (Index, Create, Edit) | 🚧 WIP |
+| 7 | Halaman React Siswa (Index, Show/Detail) | 🚧 WIP |
