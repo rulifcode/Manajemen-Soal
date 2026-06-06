@@ -1,140 +1,99 @@
-# 📚 Soal Management Platform
+# Soal Management Platform
 
-Platform bimbingan belajar berbasis web untuk manajemen soal dengan 2 role: **Admin** dan **Siswa**.
-
----
-
-## 🚀 Tech Stack
-
-| Layer     | Teknologi                        |
-|-----------|----------------------------------|
-| Backend   | Laravel 12 + Sanctum             |
-| Frontend  | React + Inertia.js               |
-| Styling   | Tailwind CSS                     |
-| Database  | MySQL (via XAMPP)                |
-| Auth      | Laravel Sanctum (Token-based)    |
-| Caching   | Laravel Cache (database driver)  |
+Platform bimbingan belajar untuk manajemen soal berbasis **Laravel 11 + Inertia.js + React + Tailwind CSS**.
 
 ---
 
-## ✅ Fitur yang Diimplementasikan
+## Tech Stack
 
-### 👤 Role Admin
-- Upload soal dalam format **PDF**, **Image (JPG/JPEG/PNG)**, dan **Link YouTube**
-- Lihat daftar soal (Judul, Tipe, Tanggal Upload, Aksi)
-- Edit & hapus soal (beserta file fisik di storage)
-- Download soal (PDF & Image)
-- Salin link YouTube
-
-### 🎓 Role Siswa
-- Lihat daftar soal
-- Lihat detail soal dengan **preview**:
-  - PDF → embedded PDF viewer
-  - YouTube → embedded iframe player
-  - Image → tampil langsung
-
-### ⚙️ Fitur Tambahan (Bonus)
-- Pagination pada list materi
-- Search & filter materi berdasarkan judul dan tipe
-- Caching pada endpoint list & detail materi
-- Cache otomatis di-clear saat data diubah (selective, tidak flush semua)
-- Relasi tabel `file_materi` → `users` via `created_by`
-- Middleware role-based access control (RBAC)
-- SoftDeletes pada tabel `file_materi`
+| Layer      | Teknologi                          |
+|------------|------------------------------------|
+| Backend    | Laravel 11                         |
+| Frontend   | React 18 + Inertia.js              |
+| Styling    | Tailwind CSS v3                    |
+| Icons      | Lucide React                       |
+| Database   | MySQL                              |
+| Auth       | Laravel Sanctum                    |
+| Caching    | Laravel Cache (Database driver)    |
+| Build Tool | Vite                               |
 
 ---
 
-## 🗄️ Database Design
+## Requirements
 
-### Tabel `users`
-| Field              | Tipe         | Keterangan              |
-|--------------------|--------------|-------------------------|
-| id                 | bigint (PK)  | Auto increment          |
-| name               | varchar      |                         |
-| email              | varchar      | Unique                  |
-| password           | varchar      | Bcrypt hashed           |
-| role               | enum         | `admin` / `siswa`       |
-| email_verified_at  | timestamp    | Nullable                |
-| remember_token     | varchar      | Nullable                |
-| created_at         | timestamp    |                         |
-| updated_at         | timestamp    |                         |
+Pastikan semua tools berikut sudah terinstall di komputer:
 
-### Tabel `file_materi`
-| Field       | Tipe         | Keterangan                          |
-|-------------|--------------|-------------------------------------|
-| id          | bigint (PK)  | Auto increment                      |
-| title       | varchar      | Judul soal                          |
-| description | text         | Nullable                            |
-| type        | enum         | `pdf` / `image` / `youtube`         |
-| file_path   | varchar      | Path file di storage, nullable      |
-| youtube_url | varchar      | URL YouTube, nullable               |
-| created_by  | bigint (FK)  | Foreign key → `users.id`            |
-| deleted_at  | timestamp    | SoftDeletes, nullable               |
-| created_at  | timestamp    |                                     |
-| updated_at  | timestamp    |                                     |
-
-**Relasi:** `file_materi.created_by` → `users.id` (Many-to-One, CASCADE on delete)
+| Tool       | Versi Minimum | Cek Versi              |
+|------------|---------------|------------------------|
+| PHP        | >= 8.2        | `php -v`               |
+| Composer   | >= 2.x        | `composer --version`   |
+| Node.js    | >= 18.x       | `node -v`              |
+| NPM        | >= 9.x        | `npm -v`               |
+| MySQL      | >= 8.0        | `mysql --version`      |
 
 ---
 
-## 📡 API Endpoints
+## Instalasi Lengkap
 
-### Auth
-| Method | Endpoint      | Deskripsi        | Auth |
-|--------|---------------|------------------|------|
-| POST   | /api/login    | Login user       | ❌   |
-| POST   | /api/logout   | Logout user      | ✅   |
-| GET    | /api/me       | Info user aktif  | ✅   |
+### 1. Clone Repository
 
-### Admin
-| Method | Endpoint                    | Deskripsi              | Auth  |
-|--------|-----------------------------|------------------------|-------|
-| GET    | /api/list-materi            | List semua materi      | Admin |
-| GET    | /api/show-materi/{id}       | Detail materi          | Admin |
-| POST   | /api/upload-materi          | Upload soal baru       | Admin |
-| POST   | /api/update-materi/{id}     | Edit soal              | Admin |
-| DELETE | /api/delete-materi/{id}     | Hapus soal             | Admin |
-| GET    | /api/materi-download/{id}   | Download file          | Admin |
-
-### Siswa
-| Method | Endpoint                | Deskripsi         | Auth  |
-|--------|-------------------------|-------------------|-------|
-| GET    | /api/list-materi        | List semua materi | Siswa |
-| GET    | /api/detail-materi/{id} | Detail materi     | Siswa |
-
----
-
-## ⚙️ Cara Instalasi & Menjalankan
-
-### Prasyarat
-- PHP >= 8.2
-- Composer
-- Node.js & NPM
-- XAMPP (Apache + MySQL)
-- Git
-
-### Langkah Instalasi
-
-**1. Clone repository**
 ```bash
 git clone https://github.com/username/soal-management.git
 cd soal-management
 ```
 
-**2. Install dependencies**
+---
+
+### 2. Install PHP Dependencies
+
 ```bash
 composer install
+```
+
+> Jika ada error `composer: command not found`, download Composer di https://getcomposer.org/download/
+
+---
+
+### 3. Install Node Dependencies
+
+```bash
 npm install
 ```
 
-**3. Setup environment**
+Perintah ini akan menginstall semua package frontend sekaligus, termasuk:
+
+- **React & Inertia.js** — framework frontend
+- **Tailwind CSS** — utility-first CSS framework
+- **Vite** — build tool & dev server
+- **Lucide React** — icon library
+
+> Jika `lucide-react` tidak terinstall otomatis, jalankan manual:
+> ```bash
+> npm install lucide-react
+> ```
+
+---
+
+### 4. Konfigurasi Environment
+
+Salin file `.env.example` menjadi `.env`:
+
 ```bash
 cp .env.example .env
+```
+
+Generate application key:
+
+```bash
 php artisan key:generate
 ```
 
-**4. Konfigurasi database di `.env`**
+Edit file `.env`, sesuaikan konfigurasi database:
+
 ```env
+APP_NAME="Soal Management"
+APP_URL=http://localhost:8000
+
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -143,138 +102,326 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-**5. Jalankan XAMPP** — pastikan Apache & MySQL sudah Running
+> Jika menggunakan XAMPP, pastikan MySQL sudah berjalan dan `DB_USERNAME=root`, `DB_PASSWORD=` (kosong).
 
-**6. Buat database**
+---
 
-Buka `http://localhost/phpmyadmin` → buat database baru bernama `soal_management`
+### 5. Buat Database
 
-**7. Jalankan migration & seeder**
+Buka phpMyAdmin atau MySQL client, buat database baru:
+
+```sql
+CREATE DATABASE soal_management;
+```
+
+Kemudian jalankan migrasi:
+
 ```bash
 php artisan migrate
-php artisan db:seed --class=UserSeeder
+```
+
+---
+
+### 6. Buat Storage Link
+
+Agar file yang diupload bisa diakses publik:
+
+```bash
 php artisan storage:link
 ```
 
-**8. Install Sanctum API**
+---
+
+### 7. Seed Data (Opsional)
+
+Untuk mengisi data awal (akun admin & siswa):
+
 ```bash
-php artisan install:api
+php artisan db:seed
 ```
 
-**9. Build frontend**
+---
+
+## Menjalankan Aplikasi
+
+> ⚠️ **Penting:** Aplikasi membutuhkan **2 terminal yang berjalan bersamaan**. Jangan tutup salah satunya.
+
+### Terminal 1 — Laravel Backend Server
+
+```bash
+php artisan serve
+```
+
+Aplikasi akan berjalan di: `http://localhost:8000`
+
+### Terminal 2 — Vite Dev Server (React + Tailwind CSS)
+
+Buka terminal baru (jangan tutup Terminal 1), lalu jalankan:
+
 ```bash
 npm run dev
 ```
 
-**10. Akses aplikasi**
-
-Buka browser: `http://localhost/soal-management/public`
+> Vite akan mengkompilasi React dan Tailwind CSS secara realtime. Jika terminal ini ditutup, tampilan aplikasi akan hilang/tidak muncul.
 
 ---
 
-## 👥 Akun Default (Seeder)
+## Akun Default
 
-| Role  | Email               | Password |
-|-------|---------------------|----------|
-| Admin | admin@example.com   | password |
-| Siswa | siswa@example.com   | password |
+Setelah menjalankan seeder:
+
+| Role  | Email             | Password |
+|-------|-------------------|----------|
+| Admin | admin@example.com | password |
+| Siswa | siswa@example.com | password |
 
 ---
 
-## 🧪 Cara Test API (Postman / Thunder Client)
+## Troubleshooting
 
-### Login
+### Halaman putih / blank setelah buka browser
+
+Pastikan **Terminal 2 (Vite)** sudah berjalan. Halaman putih biasanya terjadi karena Vite dev server tidak aktif.
+
+```bash
+npm run dev
 ```
-POST http://localhost/soal-management/public/api/login
-Headers: Accept: application/json
-Body (JSON):
+
+### Error: `Failed to resolve import "lucide-react"`
+
+Install lucide-react secara manual:
+
+```bash
+npm install lucide-react
+```
+
+Lalu restart Vite:
+
+```bash
+npm run dev
+```
+
+### Error: `Cannot find module` atau dependency lainnya
+
+Hapus cache dan install ulang:
+
+```bash
+rm -rf node_modules
+npm install
+npm run dev
+```
+
+### Error: `php artisan migrate` gagal
+
+Pastikan:
+1. MySQL sudah berjalan (cek XAMPP Control Panel)
+2. Database `soal_management` sudah dibuat
+3. Konfigurasi `.env` sudah benar
+
+### Error: `Class not found` di PHP
+
+Jalankan autoload ulang:
+
+```bash
+composer dump-autoload
+```
+
+### File upload tidak muncul
+
+Pastikan storage link sudah dibuat:
+
+```bash
+php artisan storage:link
+```
+
+---
+
+## Build untuk Production
+
+Jika ingin deploy ke server production:
+
+```bash
+npm run build
+```
+
+Kemudian jalankan hanya Laravel server (Vite tidak dibutuhkan lagi):
+
+```bash
+php artisan serve
+```
+
+---
+
+## Struktur Folder Penting
+
+```
+app/
+├── Http/
+│   ├── Controllers/
+│   │   ├── Admin/
+│   │   │   └── MateriWebController.php   # CRUD soal (web)
+│   │   ├── Siswa/
+│   │   │   ├── DashboardController.php
+│   │   │   └── MateriWebController.php   # Lihat soal (web)
+│   │   └── DashboardController.php       # Dashboard admin
+│   ├── Middleware/
+│   │   └── RoleMiddleware.php
+│   └── Resources/
+│       └── MateriResource.php
+├── Models/
+│   ├── FileMateri.php
+│   └── User.php
+resources/
+└── js/
+    └── Pages/
+        ├── Admin/
+        │   └── Materi/
+        │       ├── Index.jsx    # Daftar soal admin
+        │       ├── Create.jsx   # Upload soal
+        │       └── Edit.jsx     # Edit soal
+        ├── Siswa/
+        │   ├── Dashboard.jsx
+        │   └── Materi/
+        │       ├── Index.jsx    # Daftar soal siswa
+        │       └── Show.jsx     # Detail soal siswa
+        └── Dashboard.jsx        # Redirect by role
+routes/
+├── web.php
+└── api.php
+```
+
+---
+
+## API Endpoints
+
+Base URL: `http://localhost:8000`
+
+Authentication menggunakan **Laravel Sanctum** (Bearer Token).
+
+### Auth
+
+| Method | Endpoint      | Deskripsi |
+|--------|---------------|-----------|
+| POST   | `/api/login`  | Login     |
+| POST   | `/api/logout` | Logout    |
+
+### Admin
+
+| Method | Endpoint                    | Deskripsi           |
+|--------|-----------------------------|---------------------|
+| GET    | `/api/list-materi`          | Daftar semua soal   |
+| GET    | `/api/show-materi/{id}`     | Detail soal         |
+| POST   | `/api/upload-materi`        | Upload soal baru    |
+| GET    | `/api/materi-download/{id}` | Download file soal  |
+
+### Siswa
+
+| Method | Endpoint                   | Deskripsi   |
+|--------|----------------------------|-------------|
+| GET    | `/api/list-materi`         | Daftar soal |
+| GET    | `/api/detail-materi/{id}`  | Detail soal |
+
+### Contoh Request Upload Soal (PDF/Image)
+
+```http
+POST /api/upload-materi
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+title        = "Soal Matematika Bab 1"
+description  = "Persamaan Linear"
+type         = "pdf"
+file         = [file.pdf]
+```
+
+### Contoh Request Upload YouTube
+
+```http
+POST /api/upload-materi
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+title        = "Video Pembahasan"
+type         = "youtube"
+youtube_url  = "https://www.youtube.com/watch?v=xxxxx"
+```
+
+### Contoh Response
+
+```json
 {
-    "email": "admin@example.com",
-    "password": "password"
+  "status": true,
+  "message": "Materi berhasil diupload",
+  "data": {
+    "id": 1,
+    "title": "Soal Matematika Bab 1",
+    "type": "pdf",
+    "file_url": "http://localhost:8000/storage/materi/pdf/file.pdf",
+    "created_at": "06 Jun 2026"
+  }
 }
 ```
 
-### Gunakan Token
-Salin token dari response login, lalu tambahkan di header setiap request:
-```
-Authorization: Bearer {token}
-Accept: application/json
-```
+---
 
-### Upload Soal (Admin)
-```
-POST http://localhost/soal-management/public/api/upload-materi
-Headers: Authorization: Bearer {token}
-Body (form-data):
-  title        = Soal Matematika Bab 1
-  type         = pdf
-  file         = [pilih file PDF]
-  description  = Soal latihan persamaan linear
-```
+## Database Design
+
+### Tabel `users`
+
+| Column     | Type      | Keterangan        |
+|------------|-----------|-------------------|
+| id         | bigint    | Primary key       |
+| name       | varchar   |                   |
+| email      | varchar   | Unique            |
+| password   | varchar   | Hashed (bcrypt)   |
+| role       | enum      | `admin` / `siswa` |
+| created_at | timestamp |                   |
+| updated_at | timestamp |                   |
+
+### Tabel `file_materi`
+
+| Column      | Type                        | Keterangan             |
+|-------------|-----------------------------|------------------------|
+| id          | bigint                      | Primary key            |
+| title       | varchar                     | Judul soal             |
+| description | text                        | Deskripsi (nullable)   |
+| type        | enum(`pdf`,`image`,`youtube`) | Tipe soal            |
+| file_path   | varchar                     | Path file (nullable)   |
+| youtube_url | varchar                     | URL YouTube (nullable) |
+| created_by  | bigint                      | Foreign key → users.id |
+| deleted_at  | timestamp                   | Soft delete            |
+| created_at  | timestamp                   |                        |
+| updated_at  | timestamp                   |                        |
 
 ---
 
-## 📁 Struktur Folder Penting
+## Role & Akses
 
-```
-soal-management/
-├── app/
-│   ├── Http/
-│   │   ├── Controllers/
-│   │   │   ├── Admin/MateriController.php
-│   │   │   ├── Auth/AuthController.php
-│   │   │   └── Siswa/MateriController.php
-│   │   ├── Middleware/
-│   │   │   └── RoleMiddleware.php
-│   │   └── Resources/
-│   │       └── MateriResource.php
-│   └── Models/
-│       ├── FileMateri.php
-│       └── User.php
-├── database/
-│   ├── migrations/
-│   └── seeders/
-│       └── UserSeeder.php
-├── resources/js/
-│   └── Pages/
-│       ├── Auth/
-│       ├── Admin/
-│       │   └── Materi/         ← halaman admin (WIP)
-│       └── Siswa/
-│           └── Materi/         ← halaman siswa (WIP)
-├── routes/
-│   └── api.php
-└── storage/app/public/         ← file upload tersimpan di sini
-```
+| Fitur                      | Admin | Siswa |
+|----------------------------|:-----:|:-----:|
+| Dashboard statistik        | ✅    | ✅    |
+| Upload soal                | ✅    | ❌    |
+| Edit soal                  | ✅    | ❌    |
+| Hapus soal                 | ✅    | ❌    |
+| Download soal (PDF/Image)  | ✅    | ❌    |
+| Salin link YouTube         | ✅    | ❌    |
+| Lihat daftar soal          | ✅    | ✅    |
+| Preview / detail soal      | ✅    | ✅    |
 
 ---
 
-## 🔐 Implementasi Caching
+## Fitur Unggulan
 
-Caching diterapkan pada endpoint list dan detail materi menggunakan `Cache::remember()`.
-Saat data berubah (upload/edit/delete), cache di-invalidate secara selektif menggunakan
-key registry — tanpa `Cache::flush()` yang bisa menghapus cache lain.
-
-```php
-// Menyimpan cache
-Cache::remember($cacheKey, 60, fn() => FileMateri::paginate(10));
-
-// Invalidate selektif saat data berubah
-Cache::forget("materi_{$id}");
-Cache::forget("materi_siswa_{$id}");
-$this->forgetAllListCache(); // loop registry key, forget satu per satu
-```
+- **Drag & Drop Upload** — upload file dengan drag & drop atau klik
+- **Preview Langsung** — preview PDF, gambar, dan YouTube embed sebelum submit
+- **Caching** — list soal di-cache untuk performa optimal
+- **Soft Delete** — data tidak benar-benar terhapus dari database
+- **Responsive UI** — tampilan optimal di desktop maupun mobile
+- **Role-based Access** — akses dibatasi berdasarkan role user
+- **Flash Notification** — notifikasi toast setelah aksi berhasil/gagal
 
 ---
 
-## 🔧 Fix & Improvement yang Diterapkan
+## Lisensi
 
-| # | Issue | Status |
-|---|-------|--------|
-| 1 | Migration `add_role_to_users_table` kosong — kolom `role` sudah ada di migration utama | ✅ Verified aman |
-| 2 | `Cache::flush()` diganti selective `Cache::forget()` via key registry | ✅ Fixed |
-| 3 | `MateriResource` crash jika `creator` null | ✅ Fixed |
-| 4 | Cache siswa tidak di-invalidate saat admin update/delete | ✅ Fixed |
-| 5 | Route `/list-materi` closure diganti ke masing-masing role group | ✅ Fixed |
-| 6 | Halaman React Admin (Index, Create, Edit) | 🚧 WIP |
-| 7 | Halaman React Siswa (Index, Show/Detail) | 🚧 WIP |
+MIT License

@@ -11,6 +11,9 @@ export default function AuthenticatedLayout({ header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
+    const isAdmin = user.role === 'admin';
+    const isSiswa = user.role === 'siswa';
+
     return (
         <div className="min-h-screen bg-gray-100">
             <nav className="border-b border-gray-100 bg-white">
@@ -18,9 +21,13 @@ export default function AuthenticatedLayout({ header, children }) {
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
-                                <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
-                                </Link>
+                            <Link href="/">
+                                    <img
+                                        src="/images/kreasiedukasi.webp"
+                                        alt="Kreasi Edukasi"
+                                        className="block h-9 w-auto"
+                                    />
+                            </Link>
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
@@ -30,10 +37,39 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Dashboard
                                 </NavLink>
+
+                                {/* Link Materi untuk Admin */}
+                                {isAdmin && (
+                                    <NavLink
+                                        href={route('admin.materi.index')}
+                                        active={route().current('admin.materi.*')}
+                                    >
+                                        Manajemen Soal
+                                    </NavLink>
+                                )}
+
+                                {/* Link Materi untuk Siswa */}
+                                {isSiswa && (
+                                    <NavLink
+                                        href={route('siswa.materi.index')}
+                                        active={route().current('siswa.materi.*')}
+                                    >
+                                        Daftar Soal
+                                    </NavLink>
+                                )}
                             </div>
                         </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                            {/* Role Badge */}
+                            <span className={`me-3 px-2.5 py-1 text-xs font-medium rounded-full ${
+                                isAdmin
+                                    ? 'bg-indigo-100 text-indigo-700'
+                                    : 'bg-emerald-100 text-emerald-700'
+                            }`}>
+                                {isAdmin ? 'Admin' : 'Siswa'}
+                            </span>
+
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -121,6 +157,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </div>
 
+                {/* Mobile Menu */}
                 <div
                     className={
                         (showingNavigationDropdown ? 'block' : 'hidden') +
@@ -134,6 +171,24 @@ export default function AuthenticatedLayout({ header, children }) {
                         >
                             Dashboard
                         </ResponsiveNavLink>
+
+                        {isAdmin && (
+                            <ResponsiveNavLink
+                                href={route('admin.materi.index')}
+                                active={route().current('admin.materi.*')}
+                            >
+                                Manajemen Soal
+                            </ResponsiveNavLink>
+                        )}
+
+                        {isSiswa && (
+                            <ResponsiveNavLink
+                                href={route('siswa.materi.index')}
+                                active={route().current('siswa.materi.*')}
+                            >
+                                Daftar Soal
+                            </ResponsiveNavLink>
+                        )}
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4">
@@ -144,6 +199,13 @@ export default function AuthenticatedLayout({ header, children }) {
                             <div className="text-sm font-medium text-gray-500">
                                 {user.email}
                             </div>
+                            <span className={`mt-1 inline-block px-2 py-0.5 text-xs font-medium rounded-full ${
+                                isAdmin
+                                    ? 'bg-indigo-100 text-indigo-700'
+                                    : 'bg-emerald-100 text-emerald-700'
+                            }`}>
+                                {isAdmin ? 'Admin' : 'Siswa'}
+                            </span>
                         </div>
 
                         <div className="mt-3 space-y-1">
