@@ -2,6 +2,9 @@
 
 Platform bimbingan belajar untuk manajemen soal berbasis **Laravel 11 + Inertia.js + React + Tailwind CSS**.
 
+dokumentasi Video 
+
+
 ---
 
 ## Tech Stack
@@ -422,6 +425,4 @@ youtube_url  = "https://www.youtube.com/watch?v=xxxxx"
 
 ---
 
-## Lisensi
-
-MIT License
+## Best Regards Rulif Fadria Nirwansyah | https://rulifweb.vercel.app/
