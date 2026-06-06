@@ -3,6 +3,7 @@
 Platform bimbingan belajar untuk manajemen soal berbasis **Laravel 11 + Inertia.js + React + Tailwind CSS**.
 
 dokumentasi Video 
+https://app.usebubbles.com/8T6HZCjvXggPV6iVeZAEPb/recording-jun-06-2026 
 
 
 ---
